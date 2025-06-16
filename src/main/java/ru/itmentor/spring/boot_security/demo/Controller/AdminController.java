@@ -3,8 +3,10 @@ package ru.itmentor.spring.boot_security.demo.Controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import ru.itmentor.spring.boot_security.demo.Model.Role;
 import ru.itmentor.spring.boot_security.demo.Model.User;
 import ru.itmentor.spring.boot_security.demo.Repositories.RoleRepository;
+import ru.itmentor.spring.boot_security.demo.Service.RoleService;
 import ru.itmentor.spring.boot_security.demo.Service.UserService;
 
 import java.util.Set;
@@ -13,11 +15,11 @@ import java.util.Set;
 @RequestMapping("/admin")
 public class AdminController {
     private final UserService userService;
-private final RoleRepository roleRepository;
+private final RoleService roleService;
 
-    public AdminController(UserService userService, RoleRepository roleRepository) {
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
+       this.roleService = roleService;
     }
 
 
@@ -30,7 +32,7 @@ private final RoleRepository roleRepository;
     @GetMapping("/edit/{id}")
     public String editUserForm(@PathVariable Long id, Model model) {
         model.addAttribute("user", userService.getUserById(id).orElseThrow());
-        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("roles", roleService.findAll());
         return "edit";
     }
 
@@ -50,13 +52,15 @@ private final RoleRepository roleRepository;
     @GetMapping("/new")
     public String newUser(Model model) {
         model.addAttribute("user", new User());
-        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("roles", roleService.findAll());
         return "new";
     }
     @PostMapping("/new")
     public String createUser(@ModelAttribute User user,
-                             @RequestParam Set<String> roles) {
-        userService.createUser(user, roles);
+                             @RequestParam ("roleType") Set<Long> roles) {
+        Set<Role> roleIds = roleService.findByIds(roles);
+        user.setRoles(roleIds);
+        userService.createUser(user);
         return "redirect:/admin";
     }
 }

@@ -10,13 +10,10 @@ public interface UserService {
 
     Optional<User> getUserById(Long id);
 
-    User findByUsername(String username);
-
-    boolean createUser(User user, Set<String> roleNames);
+    User createUser(User user);
 
     User updateUser(Long id, User userUpdates);
 
     boolean deleteUser(Long id);
 
-    void initRolesAndAdmin();
 }

@@ -21,7 +21,7 @@
   </div>
   <div class="form-example">
     <label for="roles">Enter your roles: </label>
-    <select th:field="*{roles}">
+    <select name="roleType" th:field="*{roles}">
       <option th:each="r:${roles}" th:value="${r.id}"th:text="${r.name}">
         role
       </option>

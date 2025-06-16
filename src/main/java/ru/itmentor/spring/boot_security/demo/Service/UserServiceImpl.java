@@ -27,29 +27,6 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PostConstruct
-    public void initRolesAndAdmin() {
-        if (roleRepository.findByName("ROLE_ADMIN") == null) {
-            roleRepository.save(new Role("ROLE_ADMIN"));
-        }
-        if (roleRepository.findByName("ROLE_USER") == null) {
-            roleRepository.save(new Role("ROLE_USER"));
-        }
-
-        if (userRepository.findByUsername("admin") == null) {
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin"));
-            admin.setEnabled(true);
-
-            Set<Role> adminRoles = new HashSet<>();
-            adminRoles.add(roleRepository.findByName("ROLE_ADMIN"));
-            admin.setRoles(adminRoles);
-
-            userRepository.save(admin);
-        }
-    }
-
     @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -60,22 +37,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id);
     }
 
-    @Override
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
 
     @Override
-    public boolean createUser(User user, Set<String> roleNames) {
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            return false;
-        }
-
-        Set<Role> roles = resolveRoles(roleNames);
+    public User createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(roles);
-        userRepository.save(user);
-        return true;
+        return userRepository.save(user);
     }
 
     @Override
@@ -105,5 +71,5 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toSet());
     }
 
-    }
+}
 
