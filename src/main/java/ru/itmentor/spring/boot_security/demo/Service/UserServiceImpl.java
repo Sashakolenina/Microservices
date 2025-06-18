@@ -3,38 +3,38 @@ package ru.itmentor.spring.boot_security.demo.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.itmentor.spring.boot_security.demo.Model.Role;
 import ru.itmentor.spring.boot_security.demo.Model.User;
 import ru.itmentor.spring.boot_security.demo.Repositories.RoleRepository;
 import ru.itmentor.spring.boot_security.demo.Repositories.UserRepository;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private static final String SUPER_USERNAME = "Super";
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+        users.forEach(user -> user.getRoles().size());
+        return users;
     }
 
     @Override
     public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+        Optional<User> optional = userRepository.findById(id);
+        optional.ifPresent(user -> user.getRoles().size());
+        return optional;
     }
 
 
@@ -46,30 +46,46 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(Long id, User userUpdates) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User Not Found"));
-        user.setUsername(userUpdates.getUsername());
-        user.setPassword(passwordEncoder.encode(userUpdates.getPassword()));
-        user.setEnabled(userUpdates.isEnabled());
-        user.setRoles(userUpdates.getRoles());
-        return userRepository.save(user);
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        if (SUPER_USERNAME.equals(existingUser.getUsername())) {
+            throw new SecurityException("Cannot update Super user");
+        }
+
+        existingUser.setUsername(userUpdates.getUsername());
+
+        if (!userUpdates.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userUpdates.getPassword()));
+        }
+
+        existingUser.setEnabled(userUpdates.isEnabled());
+        existingUser.setRoles(userUpdates.getRoles());
+
+        return userRepository.save(existingUser);
     }
 
     @Override
     public boolean deleteUser(Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return true;
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (SUPER_USERNAME.equals(user.getUsername())) {
+            throw new SecurityException("Cannot delete Super user");
         }
-        return false;
+
+        userRepository.delete(user);
+        return true;
     }
 
-    private Set<Role> resolveRoles(Set<String> roleNames) {
-        return roleNames.stream()
-                .map(roleRepository::findByName)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
 }
 
