@@ -5,7 +5,6 @@ import ru.itmentor.spring.boot_security.demo.Model.Role;
 import ru.itmentor.spring.boot_security.demo.Repositories.RoleRepository;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -18,8 +17,8 @@ public class RoleServiceImpl implements RoleService{
 
 
     @Override
-    public List<Role> findAll() {
-        return roleRepository.findAll();
+    public Set<Role> findAll() {
+        return new HashSet<>(roleRepository.findAll());
     }
 
     @Override

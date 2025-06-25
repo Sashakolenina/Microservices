@@ -1,18 +1,20 @@
 package ru.itmentor.spring.boot_security.demo.Controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.itmentor.spring.boot_security.demo.Model.Role;
 import ru.itmentor.spring.boot_security.demo.Model.User;
-import ru.itmentor.spring.boot_security.demo.Repositories.RoleRepository;
 import ru.itmentor.spring.boot_security.demo.Service.RoleService;
 import ru.itmentor.spring.boot_security.demo.Service.UserService;
+import ru.itmentor.spring.boot_security.demo.dto.UserDto;
+import ru.itmentor.spring.boot_security.demo.dto.UserResponseDto;
+import ru.itmentor.spring.boot_security.demo.dto.UserUpdateDto;
 
+import java.util.List;
 import java.util.Set;
 
-@Controller
+@RestController
 @RequestMapping("/admin")
 public class AdminController {
     private final UserService userService;
@@ -23,62 +25,45 @@ public class AdminController {
         this.roleService = roleService;
     }
 
-
     @GetMapping
-    public String userList(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        return "admin";
+    public ResponseEntity<List<UserDto>> userList() {
+        List<UserDto> users = userService.getAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @GetMapping("/edit/{id}")
-    public String editUserForm(@PathVariable Long id, Model model) {
-        model.addAttribute("user", userService.getUserById(id).orElseThrow());
-        model.addAttribute("roles", roleService.findAll());
-        return "edit";
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDto> getAllUsers(@PathVariable Long id) {
+        UserResponseDto user = userService.getUserById(id);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping("/{id}")
-    public String updateUser(@PathVariable Long id,
-                             @ModelAttribute User userUpdates,
-                             RedirectAttributes redirectAttributes) {
-        User existingUser = userService.getUserById(id).orElseThrow();
-
-        if ("Super".equals(existingUser.getUsername())) {
-            redirectAttributes.addFlashAttribute("error", "Нельзя изменять пользователя Super");
-            return "redirect:/admin";
-        }
-
-        userService.updateUser(id, userUpdates);
-        return "redirect:/admin";
+    @GetMapping("/roles")
+    public ResponseEntity<Set<Role>> getAllRoles() {
+        Set<Role> roles = roleService.findAll();
+        return ResponseEntity.ok(roles);
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Long id,
-                             RedirectAttributes redirectAttributes) {
-        User user = userService.getUserById(id).orElseThrow();
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody User user,
+                                              @RequestParam Set<Long> roleIds) {
+        Set<Role> roles = roleService.findByIds(roleIds);
+        user.setRoles(roles);
+        User createdUser = userService.createUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.from(createdUser));
+    }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Long id,
+                                           @RequestBody UserUpdateDto userUpdates
+    ) {
+        User updatedUser = userService.updateUser(id, userUpdates);
+        return ResponseEntity.ok(updatedUser);
+    }
 
-        if ("Super".equals(user.getUsername())) {
-            redirectAttributes.addFlashAttribute("error", "Нельзя удалить пользователя Super");
-            return "redirect:/admin";
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return "redirect:/admin";
-    }
-
-    @GetMapping("/new")
-    public String newUser(Model model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("roles", roleService.findAll());
-        return "new";
-    }
-
-    @PostMapping("/new")
-    public String createUser(@ModelAttribute User user,
-                             @RequestParam("roleType") Set<Long> roles) {
-        Set<Role> roleIds = roleService.findByIds(roles);
-        user.setRoles(roleIds);
-        userService.createUser(user);
-        return "redirect:/admin";
+        return ResponseEntity.noContent().build();
     }
 }

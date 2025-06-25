@@ -1,18 +1,21 @@
 package ru.itmentor.spring.boot_security.demo.Service;
 
 import ru.itmentor.spring.boot_security.demo.Model.User;
+import ru.itmentor.spring.boot_security.demo.dto.UserDto;
+import ru.itmentor.spring.boot_security.demo.dto.UserResponseDto;
+import ru.itmentor.spring.boot_security.demo.dto.UserUpdateDto;
 
 import java.util.*;
 
 
 public interface UserService {
-    List<User> getAllUsers();
+    List<UserDto> getAllUsers();
 
-    Optional<User> getUserById(Long id);
+    UserResponseDto getUserById(Long id);
 
     User createUser(User user);
 
-    User updateUser(Long id, User userUpdates);
+    User updateUser(Long id, UserUpdateDto userUpdates);
 
     boolean deleteUser(Long id);
 

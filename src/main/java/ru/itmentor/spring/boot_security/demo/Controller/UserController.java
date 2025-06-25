@@ -1,16 +1,20 @@
 package ru.itmentor.spring.boot_security.demo.Controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.itmentor.spring.boot_security.demo.Model.User;
 import ru.itmentor.spring.boot_security.demo.security.CurrentUser;
 
-@Controller
+@RestController
+@RequestMapping("/user")
 public class UserController {
-    @GetMapping("/user")
-    public String userPage(@AuthenticationPrincipal CurrentUser currentUser, Model model) {
-        model.addAttribute("user", currentUser.getUser());
-        return "user";
+
+    @GetMapping
+    public ResponseEntity<User> getUserProfile(@AuthenticationPrincipal CurrentUser currentUser) {
+        return ResponseEntity.ok(currentUser.getUser());
     }
 }
+
