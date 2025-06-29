@@ -5,7 +5,7 @@ import ru.itmentor.spring.boot_security.demo.dto.UserDto;
 import ru.itmentor.spring.boot_security.demo.dto.UserResponseDto;
 import ru.itmentor.spring.boot_security.demo.dto.UserUpdateDto;
 
-import java.util.*;
+import java.util.List;
 
 
 public interface UserService {
@@ -19,7 +19,4 @@ public interface UserService {
 
     boolean deleteUser(Long id);
 
-    Optional<User> findByUsername(String username);
-
-    boolean existsByUsername(String username);
 }

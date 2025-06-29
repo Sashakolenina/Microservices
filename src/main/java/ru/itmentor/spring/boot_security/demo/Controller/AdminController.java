@@ -8,6 +8,7 @@ import ru.itmentor.spring.boot_security.demo.Model.User;
 import ru.itmentor.spring.boot_security.demo.Service.RoleService;
 import ru.itmentor.spring.boot_security.demo.Service.UserService;
 import ru.itmentor.spring.boot_security.demo.dto.UserDto;
+import ru.itmentor.spring.boot_security.demo.dto.UserDtoConvert;
 import ru.itmentor.spring.boot_security.demo.dto.UserResponseDto;
 import ru.itmentor.spring.boot_security.demo.dto.UserUpdateDto;
 
@@ -19,10 +20,13 @@ import java.util.Set;
 public class AdminController {
     private final UserService userService;
     private final RoleService roleService;
+    private final UserDtoConvert userDtoConvert;
 
-    public AdminController(UserService userService, RoleService roleService) {
+
+    public AdminController(UserService userService, RoleService roleService, UserDtoConvert userDtoConvert) {
         this.userService = userService;
         this.roleService = roleService;
+        this.userDtoConvert = userDtoConvert;
     }
 
     @GetMapping
@@ -45,11 +49,8 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody User user,
-                                              @RequestParam Set<Long> roleIds) {
-        Set<Role> roles = roleService.findByIds(roleIds);
-        user.setRoles(roles);
-        User createdUser = userService.createUser(user);
+    public ResponseEntity<UserDto> createUser(@RequestBody UserUpdateDto userUpdateDto) {
+        User createdUser = userService.createUser(userDtoConvert.convertToUser(userUpdateDto));
         return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.from(createdUser));
     }
 

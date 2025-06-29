@@ -9,5 +9,5 @@ public interface RoleService {
 
     Set<Role> findAll();
 
-    Set<Role> findByIds(Set<Long> roles);
+    Set<Role> findRolesByNames(Set<String> roleNames);
 }

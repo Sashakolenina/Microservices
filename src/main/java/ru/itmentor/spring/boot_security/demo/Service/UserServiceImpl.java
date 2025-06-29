@@ -1,6 +1,5 @@
 package ru.itmentor.spring.boot_security.demo.Service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +12,8 @@ import ru.itmentor.spring.boot_security.demo.dto.UserResponseDto;
 import ru.itmentor.spring.boot_security.demo.dto.UserUpdateDto;
 import ru.itmentor.spring.boot_security.demo.mapper.UserMapper;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,18 +64,18 @@ public class UserServiceImpl implements UserService {
         if (SUPER_USERNAME.equals(existingUser.getUsername())) {
             throw new SecurityException("Cannot update Super user");
         }
-        if  (userUpdates.getUsername()!=null && !userUpdates.getUsername().isEmpty()) {
+        if (userUpdates.getUsername() != null && !userUpdates.getUsername().isEmpty()) {
             existingUser.setUsername(userUpdates.getUsername());
         }
         if (userUpdates.getPassword() != null && !userUpdates.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(userUpdates.getPassword()));
         }
         if (userUpdates.getRoles() != null && !userUpdates.getRoles().isEmpty()) {
-           Set<Role> roleSet = userUpdates.getRoles().stream()
-                   .map(role -> roleRepository.findByName(String.valueOf(role))
-                           .orElseThrow(()->new IllegalArgumentException("Role not Found")))
-                   .collect(Collectors.toSet());
-           existingUser.setRoles(roleSet);
+            Set<Role> roleSet = userUpdates.getRoles().stream()
+                    .map(role -> roleRepository.findByName(String.valueOf(role))
+                            .orElseThrow(() -> new IllegalArgumentException("Role not Found")))
+                    .collect(Collectors.toSet());
+            existingUser.setRoles(roleSet);
         }
         return userRepository.save(existingUser);
 
@@ -94,14 +94,5 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
-    @Override
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
 }
 
