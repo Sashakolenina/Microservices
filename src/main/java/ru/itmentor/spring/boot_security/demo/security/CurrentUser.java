@@ -10,7 +10,7 @@ public class CurrentUser extends org.springframework.security.core.userdetails.U
 
     public CurrentUser(User user) {
         super(user.getUsername(), user.getPassword(), user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toList()));
         this.user = user;
 

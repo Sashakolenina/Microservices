@@ -2,6 +2,7 @@ package ru.itmentor.spring.boot_security.demo.Controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.itmentor.spring.boot_security.demo.Model.Role;
 import ru.itmentor.spring.boot_security.demo.Model.User;
@@ -11,6 +12,7 @@ import ru.itmentor.spring.boot_security.demo.dto.UserDto;
 import ru.itmentor.spring.boot_security.demo.dto.UserDtoConvert;
 import ru.itmentor.spring.boot_security.demo.dto.UserResponseDto;
 import ru.itmentor.spring.boot_security.demo.dto.UserUpdateDto;
+import ru.itmentor.spring.boot_security.demo.security.CurrentUser;
 
 import java.util.List;
 import java.util.Set;
@@ -27,6 +29,11 @@ public class AdminController {
         this.userService = userService;
         this.roleService = roleService;
         this.userDtoConvert = userDtoConvert;
+    }
+
+    @PostMapping("/dashboard")
+    public ResponseEntity<User> user(@AuthenticationPrincipal CurrentUser currentUser) {
+        return ResponseEntity.ok(currentUser.getUser());
     }
 
     @GetMapping

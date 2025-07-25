@@ -4,6 +4,7 @@ package ru.itmentor.spring.boot_security.demo.configs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,10 +27,13 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/").hasAuthority("ADMIN")
-                        .requestMatchers("/user/").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/user/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())  // ← Добавьте эту строку для поддержки Basic Auth
                 .formLogin(form -> form
+                        .loginPage("/login") // Явно указываем страницу логина
                         .successHandler(successUserHandler)
                         .permitAll())
                 .logout(logout -> logout
